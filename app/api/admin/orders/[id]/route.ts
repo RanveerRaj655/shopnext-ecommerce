@@ -7,7 +7,7 @@ import Order from '@/models/Order';
 
 export async function PUT(
   req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -16,7 +16,7 @@ export async function PUT(
     }
 
     await connectDB();
-    const { id }     = await params;
+    const { id } = await context.params;
     const { status } = await req.json();
 
     const order = await Order.findByIdAndUpdate(

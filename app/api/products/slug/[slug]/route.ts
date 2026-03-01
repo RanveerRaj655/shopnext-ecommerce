@@ -5,12 +5,12 @@ import Product from '@/models/Product';
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: Promise<{ slug: string }> }
+  context: { params: Promise<{ slug: string }> }
 ) {
   try {
     await connectDB();
 
-    const { slug } = await params;
+    const { slug } = await context.params;
 
     const product = await Product.findOne({ slug }).lean();
 

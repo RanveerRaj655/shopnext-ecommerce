@@ -5,14 +5,14 @@ import Product from '@/models/Product';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 
-// GET /api/products/:id
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await context.params;
     await connectDB();
-    const product = await Product.findById(params.id).lean();
+    const product = await Product.findById(id).lean();
     if (!product) {
       return NextResponse.json({ error: 'Product not found' }, { status: 404 });
     }
@@ -22,39 +22,37 @@ export async function GET(
   }
 }
 
-// PUT /api/products/:id — Admin only
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
     if ((session?.user as any)?.role !== 'admin') {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
-
+    const { id } = await context.params;
     await connectDB();
     const body = await req.json();
-    const product = await Product.findByIdAndUpdate(params.id, body, { new: true });
+    const product = await Product.findByIdAndUpdate(id, body, { new: true });
     return NextResponse.json(product);
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
 
-// DELETE /api/products/:id — Admin only
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
     if ((session?.user as any)?.role !== 'admin') {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
-
+    const { id } = await context.params;
     await connectDB();
-    await Product.findByIdAndDelete(params.id);
+    await Product.findByIdAndDelete(id);
     return NextResponse.json({ message: 'Product deleted' });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
